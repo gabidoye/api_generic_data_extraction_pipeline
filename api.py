@@ -3,15 +3,17 @@ import requests
 import pandas as pd
 from configparser import ConfigParser
 
-config = ConfigParser()
-config.read('config.ini')
-url = config.get('url', 'cityofcalgary')
-output_file_name = config.get('output', 'filename')
 
-
-class ApiReader:
-    def __init__(self, url):  #constructor
-        self.url=url
+class ApiReader(object):
+    
+    def __init__(self, file_names,endpoint): #constructor
+        parser = ConfigParser()
+        found = parser.read(file_names)
+        self.url = parser.get('url', endpoint)
+        self.output_file_name = parser.get('output', 'filename')
+        if not found:
+            raise ValueError('No config file found!')
+        
 
     def read(self) -> dict:
 
@@ -39,10 +41,11 @@ class ApiReader:
         # print(data)
         df=pd.DataFrame(data)
         # df1=df.head(10)
-        df.to_csv(output_file_name, sep='\t')
+        df.to_csv(self.output_file_name, sep='\t')
 
-name=ApiReader(url)
-print(name.flaten())
+config = ApiReader('config.ini', 'cityofcalgary')
+print(config.flaten())
+
 # class MyDatabase():
 #     def __init__(self, db="mydb", user="postgres"):
 #         self.conn = psycopg2.connect(database=db, user=user)
