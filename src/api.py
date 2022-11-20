@@ -2,13 +2,22 @@ from asyncore import read
 import requests
 import pandas as pd
 from configparser import ConfigParser
+from flatten_json import flatten_json
+from config import MyConfiguration
+import os
+
+absolute_path = os.path.dirname(__file__)
+relative_path = "../"
+full_path = os.path.join(absolute_path, relative_path)
+
+
 
 
 class ApiReader(object):
     
     def __init__(self, file_names,endpoint): #constructor
         parser = ConfigParser()
-        found = parser.read(file_names)
+        found = parser.read(full_path + file_names)
         self.url = parser.get('url', endpoint)
         self.output_file_name = parser.get('output', 'filename')
         if not found:
@@ -23,28 +32,23 @@ class ApiReader(object):
         return response_list
 
     def flaten(self):
-        data=[]
-        data2 = self.read()
-        for response in data2:  #list comprehenshion, map better optimized
-            data.append({
-            "sector": response.get('sector'),
-            "community_name": response.get('community_name'),
-            "group_category": response.get('group_category'),
-            "category": response.get('category'),
-            "count": response.get('count'),
-            "resident_count": response.get('resident_count'),
-            "date": response.get('date'),
-            "year": response.get('year')
+       
+        data = self.read()
+        if isinstance(data, dict):
+            df = pd.DataFrame([flatten_json(data)])
+            df.to_csv(self.output_file_name, sep='\t')
 
-        })
+        elif isinstance(data, list):
+            df = pd.DataFrame([flatten_json(x) for x in data])
+            df.to_csv(self.output_file_name, sep='\t')
 
-        # print(data)
-        df=pd.DataFrame(data)
-        # df1=df.head(10)
-        df.to_csv(self.output_file_name, sep='\t')
+        return 
+        
 
 config = ApiReader('config.ini', 'cityofcalgary')
 print(config.flaten())
+# config = MyConfiguration('config.ini', 'ilorin')
+# print(config.url)
 
 # class MyDatabase():
 #     def __init__(self, db="mydb", user="postgres"):
