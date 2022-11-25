@@ -4,7 +4,7 @@ import sys
  
 # adding project Folder path to the system path
 sys.path.append('/Users/gabidoye/Documents/data_Engineering/Generic_API_Pipeline/src')
-from config import MyConfiguration
+from api import ApiReader
 
 
 
@@ -17,8 +17,8 @@ class TestApi(unittest.TestCase):
           mock_requests.get.return_value = mock_response
 
         # call the getapi() and test if the status message is 'success'
-          wr = MyConfiguration('config.ini', 'cityofcalgary')
-          self.assertEqual(wr.getapi(), "SUCCESS")
+          wr = ApiReader('config.ini', 'cityofcalgary')
+          self.assertEqual(wr.read(), "SUCCESS")
     
 
 

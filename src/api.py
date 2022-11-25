@@ -45,8 +45,7 @@ class ApiReader(object):
         return 
         
 
-config = ApiReader('config.ini', 'cityofcalgary')
-print(config.flaten())
+
 # config = MyConfiguration('config.ini', 'ilorin')
 # print(config.url)
 
@@ -69,3 +68,8 @@ print(config.flaten())
 # import bitcoin_api
 # result = bitcoin_api.BitcoinAPI('COINDESK').get()
 # result = bitcoin_api.BitcoinAPI('BITSTAMP').get()
+
+if __name__ == "__main__":
+    config=ApiReader('config.ini', 'cityofcalgary')
+    print(config.flaten())
+
