@@ -29,6 +29,7 @@ class ApiReader(object):
         """Queries the weather API and returns the weather data for a particular city."""
         response = requests.get(self.url)
         response_list= response.json()
+        print(response_list)
         return response_list
 
     def flaten(self):
