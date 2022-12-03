@@ -36,7 +36,7 @@ schema = {
       "type": "object",
       "properties": {
         "sector": {
-          "type": "string"
+          "type": "int"
         },
         "community_name": {
           "type": "string"
@@ -123,17 +123,26 @@ response = requests.get("https://data.calgary.ca/resource/848s-4m4z.json")
 response_list = response.json() # This method is convenient when the API returns JSON
 # print(respons_list)
 try:
-    new=validate(response_list, schema)
+    validate(response_list, schema)
  
 except SchemaError as e:
-        print("There is an error with the schema")     
+        print("There is an error with the schema")  
+        print(e.context)
+        print("---------")
+        print(e.absolute_path) 
+        print("---------")
+        print(e.absolute_schema_path)  
+        with open('error.log','w') as f:
+              f.write(str(e.context)) 
 except ValidationError as e:
-            print(e)
+            # print(e.context)
             print("---------")
             print(e.absolute_path) 
             print("---------")
             print(e.absolute_schema_path)
-new=validate(response_list, schema=schema)
+            with open('error.log','w') as f:
+                f.write(str(e.context))
+# new=validate(response_list, schema=schema)
 
 
 
