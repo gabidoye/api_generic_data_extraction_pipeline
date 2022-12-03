@@ -1,6 +1,5 @@
 import requests
 import json
-from json import JSONDecodeError
 import pandas as pd
 from configparser import ConfigParser
 from flatten_json import flatten_json
@@ -17,12 +16,23 @@ schema = json.load(open("/Users/gabidoye/Documents/data_Engineering/Generic_API_
 
 
 class ApiReader(object):
+    """
+    Generic python class to read data from an API. It reads the specified url from the config
+    file, parse the response and write the response to a file
+    Parameters
+    -----------
+    config_file_names : .ini file
+    endpoint : URL to read data from
+    returns
+    --------
+    None
+    """
     
-    def __init__(self, file_names,endpoint): #constructor
+    def __init__(self, config_file_names,endpoint): #constructor
         global validfile
         global invalidfile
         parser = ConfigParser()
-        found = parser.read(full_path + file_names)
+        found = parser.read(full_path + config_file_names)
         self.url = parser.get('url', endpoint)
         self.output_file_name = parser.get('output', 'filename')
         self.valid_json_path = parser.get('valid_json_path', 'folder')
@@ -47,7 +57,16 @@ class ApiReader(object):
        
 
     def validite_schema(self):
-        """Validates if the json object is valid with the schema provided"""
+        """Validates if the json object is valid with the schema provided
+        parameters
+        ----------
+        json file : json object
+        schema : json object
+        Returns
+        -------
+        valid json object
+        
+        """
         with open(validfile, 'r') as j:
             json_data = json.load(j)
             # print(json_data)
@@ -70,6 +89,10 @@ class ApiReader(object):
 
 
     def flaten(self):
+        """This flattens the valid json object
+        Parameters: valid json object
+        Returns: flattened csv file
+        """
        
         data = self.validite_schema()
         if isinstance(data, dict):
