@@ -1,5 +1,6 @@
-from asyncore import read
 import requests
+import json
+from json import JSONDecodeError
 import pandas as pd
 from configparser import ConfigParser
 from flatten_json import flatten_json
@@ -20,17 +21,43 @@ class ApiReader(object):
         found = parser.read(full_path + file_names)
         self.url = parser.get('url', endpoint)
         self.output_file_name = parser.get('output', 'filename')
+        self.valid_json_path = parser.get('valid_json_path', 'folder')
+        validfile_path=os.path.join(self.valid_json_path,'data.json')
+        self.invalid_json_path = parser.get('invalid_json_path', 'folder')
+        invalidfile_path=os.path.join(self.invalid_json_path,'data.txt')
         if not found:
             raise ValueError('No config file found!')
-        
+        else:
+            try:
+                """Serialize the response and write to json formatedfile"""
+                response = requests.get(self.url)
+                response_list = response.json()
+                with open(validfile_path, 'w') as f:
+                    json.dump(response_list, f, indent=4)
+            except TypeError:
+                print('Response could not be serialized')
+                with open(invalidfile_path,'w') as f:
+                    f.write(response.text)
+
+       
 
     def read(self) -> dict:
 
-        """Queries the weather API and returns the weather data for a particular city."""
         response = requests.get(self.url)
+        
+        # print(response)
         response_list= response.json()
-        print(response_list)
-        return response_list
+        new =json.dumps(response_list)
+        print(new)
+        return new
+
+    def validate(self):
+        data = self.read()
+        try:
+            return json.loads(data)
+        except ValueError as e:
+            print('invalid json: %s' % e)
+        return None # or: raise
 
     def flaten(self):
        
@@ -72,5 +99,5 @@ class ApiReader(object):
 
 if __name__ == "__main__":
     config=ApiReader('config.ini', 'cityofcalgary')
-    print(config.flaten())
+    print(config)
 
