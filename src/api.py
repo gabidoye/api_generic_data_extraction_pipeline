@@ -60,6 +60,7 @@ class ApiReader(object):
                 f.write(response.text)
         else:
             return validfile
+            print("ok")
         
 
     def check_schema(self):
