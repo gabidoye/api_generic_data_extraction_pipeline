@@ -18,7 +18,7 @@ class TestApi(unittest.TestCase):
 
         # call the getapi() and test if the status message is 'success'
           wr = ApiReader('config.ini', 'cityofcalgary')
-          self.assertEqual(wr.read(), "SUCCESS")
+          self.assertEqual(wr.validite_schema(), "SUCCESS")
     
 
 
