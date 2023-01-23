@@ -4,16 +4,8 @@ import os
 import pandas as pd
 from configparser import ConfigParser
 from flatten_json import flatten_json
-from jsonschema import validate, ValidationError, SchemaError
-from utils import validite_schema
-
-
-absolute_path = os.path.dirname(__file__)
-relative_path = "../"
-full_path = os.path.join(absolute_path, relative_path)
-schema = json.load(open("/Users/gabidoye/Documents/data_Engineering/Generic_API_Pipeline/schema.json"))
-
-
+from jsonschema import validate
+from utils import validate_schema
 
 
 
@@ -32,7 +24,7 @@ class ApiReader(object):
     
     def __init__(self, config_file_names,endpoint): #constructor
         parser = ConfigParser()
-        found = parser.read(full_path + config_file_names)
+        found = parser.read(config_file_names)
         if not found:
             raise ValueError('No config file found!')
 
@@ -45,29 +37,38 @@ class ApiReader(object):
 
     def read(self):
         validfile = os.path.join(self.valid_file_path,'data.json')
+        # validfile = (self.valid_file_path,'data.json')
+        print(validfile)
         invalidfile = os.path.join(self.invalid_file_path,'data.txt')
+
+
         try:
-            """Serialize the response and write to json formatedfile"""
             response = requests.get(self.url)
             response_list = response.json()
-        
             with open(validfile, 'w' ) as f:
                 json.dump(response_list, f, indent=4)
-        
+
+        except requests.exceptions.Timeout:
+            print('Request to url timed out')
+        except requests.exceptions.TooManyRedirects:
+            print(" Bad url please try a different one")
         except TypeError:
             print('Response could not be serialized')
             with open(invalidfile,'w') as f:
                 f.write(response.text)
+        except requests.exceptions.RequestException as e:
+            raise SystemExit(e)
+        
         else:
             return validfile
-            # print("ok")
+           
         
 
     def check_schema(self):
         validjsonfile = self.read()
 
         try:    
-            goodjsonfile = validite_schema(validjsonfile)
+            goodjsonfile = validate_schema(validjsonfile)
             print("Valid schema and json object")
             return goodjsonfile
         except FileNotFoundError:
@@ -81,43 +82,23 @@ class ApiReader(object):
         """
        
         data = self.check_schema()
-        print(data)
-        if isinstance(data, dict):
-            df = pd.DataFrame([flatten_json(data)])
-            df.to_csv(self.output_file_name, sep='\t')
+        # print(type(data))
+        df = pd.json_normalize(data)
+        df.to_csv(self.output_file_name, sep='\t')
 
-        elif isinstance(data, list):
-            df = pd.DataFrame([flatten_json(x) for x in data])
-            df.to_csv(self.output_file_name, sep='\t')
+        # if isinstance(data, dict):
+        #     df = pd.DataFrame([flatten_json(data)])
+        #     df.to_csv(self.output_file_name, sep='\t')
+
+        # elif isinstance(data, list):
+        #     df = pd.DataFrame.from_records(data)
+        #     # df = pd.DataFrame([flatten_json(x) for x in data])
+        #     df.to_csv(self.output_file_name, sep='\t')
 
         return 
         
 
-
-# config = MyConfiguration('config.ini', 'ilorin')
-# print(config.url)
-
-# class MyDatabase():
-#     def __init__(self, db="mydb", user="postgres"):
-#         self.conn = psycopg2.connect(database=db, user=user)
-#         self.cur = self.conn.cursor()
-
-#     def query(self, query):
-#         self.cur.execute(query)
-
-#     def close(self):
-#         self.cur.close()
-#         self.conn.close()
-
-# db = MyDatabase()
-# db.query("SELECT * FROM table;")
-# db.close()
-
-# import bitcoin_api
-# result = bitcoin_api.BitcoinAPI('COINDESK').get()
-# result = bitcoin_api.BitcoinAPI('BITSTAMP').get()
-
 if __name__ == "__main__":
     config=ApiReader('config.ini', 'cityofcalgary')
-    print(config.flaten())
+    (config.flaten())
 
