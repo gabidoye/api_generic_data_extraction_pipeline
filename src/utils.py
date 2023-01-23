@@ -7,7 +7,7 @@ schema = json.load(open("/Users/gabidoye/Documents/data_Engineering/Generic_API_
 validfile = '/Users/gabidoye/Documents/data_Engineering/Generic_API_Pipeline/data/raw/data.json'
 
 
-def validite_schema(validfile):
+def validate_schema(validfile):
         """Validates if the json object is valid with the schema provided
         parameters
         ----------
